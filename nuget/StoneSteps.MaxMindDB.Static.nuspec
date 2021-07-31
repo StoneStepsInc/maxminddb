@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>StoneSteps.MaxMindDB.Static</id>
+    <version>1.6.0</version>
+    <authors>MaxMind (contents)</authors>
+    <owners>Stone Steps (package)</owners>
+    <license type="file">licenses\LICENSE.</license>
+    <projectUrl>https://github.com/StoneStepsInc/maxminddb-nuget</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A MaxMind DB library for MSVC projects.</description>
+    <releaseNotes>
+Package Notes:
+
+  * Static libraries built for x64/Win32 platforms and
+    Debug/Release configurations.
+
+MaxMindDB changes:
+
+https://github.com/maxmind/libmaxminddb/blob/1.6.0/Changes.md
+    </releaseNotes>
+    <copyright>MaxMind</copyright>
+    <tags>MaxMind DB, GeoIP, native, library</tags>
+  </metadata>
+  <files>
+   <file src="README.txt" target="" />
+   <file src="licenses\LICENSE" target="licenses\LICENSE."/>
+   <file src="build\**\*" target="build" />
+</files>
+</package>
