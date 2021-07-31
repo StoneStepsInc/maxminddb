@@ -49,6 +49,8 @@ env:
   PKG_REV: 1
   BUILD_NUMBER: ${{ github.run_number }}
 
+  SRC_TAG: 1.6.0
+
   # for VS Community Edition, replace `Enterprise` with `Community` in the path
   VCVARSALL: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall'
 
