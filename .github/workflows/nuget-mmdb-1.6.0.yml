@@ -61,7 +61,7 @@ defaults:
 
 jobs:
   build-libmmdb:
-    name: Build libMMDB
+    name: Build libmaxminddb
     runs-on: windows-latest
     
     steps:
@@ -76,7 +76,7 @@ jobs:
       #
     - name: Clone libmaxminddb
       run: |
-        git clone --branch #{{ env.SRC_TAG }} https://github.com/maxmind/libmaxminddb.git libmaxminddb
+        git clone --branch ${{ env.SRC_TAG }} https://github.com/maxmind/libmaxminddb.git libmaxminddb
 
     - name: Create build directories
       working-directory: libmaxminddb
