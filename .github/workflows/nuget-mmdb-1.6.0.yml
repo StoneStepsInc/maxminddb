@@ -1,0 +1,158 @@
+#
+# The version part is immutable in the name, but the package revision
+# component after the dash should be kept in sync with `PKG_REV`.
+# GitHun doesn't allow variables in the workflow names, so this cannot
+# be automated.
+#
+# For new MaxMindDB versions, copy this file with a new version name
+# to restart build numbers from `1`. This is necessary because GitHub
+# maintains build numbers per workflow file name.
+#
+name: MaxMindDB v1.6.0-1
+
+#
+# When `publish-package` is set to `yes`, the workflow will build
+# the package and publish it to nuget.org. Otherwise, a package
+# will be built as an artifact and may be downloaded via GitHub UI.
+#
+# Published Nuget package will use the 4th version component as a
+# package revision number because Nuget lacks package revision
+# support.
+#
+# Without publishing, a Nuget package will be uploaded as a workflow
+# artifact and will be named using a pre-release version, which is
+# an unfortunate workaround for a lack of build promotion support
+# between GitHub and Nuget. This means that true pre-release packages
+# will conflict with CI packages, but for this repository this is
+# not an issue that will ever need to be addressed.
+#
+on:
+  workflow_dispatch:
+    inputs:
+      publish-package:
+        description: Publish Nuget Package?
+        required: false
+
+#
+# For each new MaxMindDB release, change these variables:
+#
+#   * PKG_VER
+#
+# For each change in `PKG_VER`, `PKG_REV` must be reset to `1` (one).
+#
+# Package revision should be incremented by one every time package
+# content is changed in any way, such as changing compiler options,
+# adding or removing files, changing any text in README files, etc.
+#
+env:
+  PKG_VER: 1.6.0
+  PKG_REV: 1
+  BUILD_NUMBER: ${{ github.run_number }}
+
+  # for VS Community Edition, replace `Enterprise` with `Community` in the path
+  VCVARSALL: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall'
+
+  # Nuget Gallery (www.nuget.org) publish URL
+  NUGET_PUB_URL: https://api.nuget.org/v3/index.json
+
+defaults:
+  run:
+    shell: cmd
+
+jobs:
+  build-libmmdb:
+    name: Build libMMDB
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+      #
+      # This project is set up with two sub-modules, one for tests
+      # and one for test MMDB databases. This script explicitly
+      # excludes tests from the CMake build, so we can get just the
+      # main project.
+      #
+    - name: Clone libmaxminddb
+      run: |
+        git clone --branch #{{ env.SRC_TAG }} https://github.com/maxmind/libmaxminddb.git libmaxminddb
+
+    - name: Create build directories
+      working-directory: libmaxminddb
+      run: |
+        mkdir build-x64
+        mkdir build-x86
+
+    - name: Build x64
+      working-directory: libmaxminddb\build-x64
+      run: |
+        call ${{ env.VCVARSALL }} x64
+        cmake -DBUILD_TESTING=OFF -A x64 ..
+        cmake --build . --config Debug
+        cmake --build . --config Release
+
+    - name: Build Win32
+      working-directory: libmaxminddb\build-x86
+      run: |
+        call ${{ env.VCVARSALL }} x86
+        cmake -DBUILD_TESTING=OFF -A Win32 ..
+        cmake --build . --config Debug
+        cmake --build . --config Release
+
+      #
+      # Unfortunately, release builds are set up not to generate PDB,
+      # which would be helpful in debugging.
+      #
+    - name: Collect build artifacts
+      run: |
+        mkdir nuget\licenses\
+        copy /Y libmaxminddb\LICENSE. nuget\licenses\
+
+        mkdir nuget\build\native\include\
+        copy /Y libmaxminddb\include\*.h nuget\build\native\include\
+
+        mkdir nuget\build\native\lib\x64\Debug
+        copy /Y libmaxminddb\build-x64\Debug\maxminddb.lib nuget\build\native\lib\x64\Debug\
+        copy /Y libmaxminddb\build-x64\Debug\maxminddb.pdb nuget\build\native\lib\x64\Debug\
+
+        mkdir nuget\build\native\lib\x64\Release
+        copy /Y libmaxminddb\build-x64\Release\maxminddb.lib nuget\build\native\lib\x64\Release\
+
+        mkdir nuget\build\native\lib\Win32\Debug
+        copy /Y libmaxminddb\build-x86\Debug\maxminddb.lib nuget\build\native\lib\Win32\Debug\
+        copy /Y libmaxminddb\build-x86\Debug\maxminddb.pdb nuget\build\native\lib\Win32\Debug\
+
+        mkdir nuget\build\native\lib\Win32\Release
+        copy /Y libmaxminddb\build-x86\Release\maxminddb.lib nuget\build\native\lib\Win32\Release\
+
+    - name: Clean up
+      run: |
+        rmdir /S /Q libmaxminddb
+
+      # this is an unconventional use of the pre-release version - see README.md
+    - name: Make CI Nuget package
+      if: ${{ github.event.inputs.publish-package != 'yes' }}
+      run: |
+        nuget pack nuget\StoneSteps.MaxMindDB.Static.nuspec -Suffix "ci.%BUILD_NUMBER%" -Version ${{ env.PKG_VER }}.${{ env.PKG_REV }}
+
+    - name: Upload CI Nuget package
+      if: ${{ github.event.inputs.publish-package != 'yes' }}
+      uses: actions/upload-artifact@v2.2.1
+      with:
+        name: MaxMindDB CI Nuget package
+        path: StoneSteps.MaxMindDB.Static.${{ env.PKG_VER }}.${{ env.PKG_REV }}-ci.${{ env.BUILD_NUMBER }}.nupkg
+
+      #
+      # Use `-Version` explicitly to override the version in the manifest,
+      # so we can usurp the 4th version component for the build number.
+      #
+    - name: Make Nuget package
+      if: ${{ github.event.inputs.publish-package == 'yes' }}
+      run: |
+        nuget pack nuget\StoneSteps.MaxMindDB.Static.nuspec -Version ${{ env.PKG_VER }}.${{ env.PKG_REV }}
+
+    - name: Publish Nuget package
+      if: ${{ github.event.inputs.publish-package == 'yes' }}
+      run: |
+        nuget push StoneSteps.MaxMindDB.Static.${{ env.PKG_VER }}.${{ env.PKG_REV }}.nupkg -Source ${{ env.NUGET_PUB_URL }} -ApiKey "${{ secrets.NUGET_API_KEY }}" -NonInteractive
