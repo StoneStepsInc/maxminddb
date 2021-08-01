@@ -77,7 +77,7 @@ Without a build management system, the GitHub workflow in this
 repository uses the pre-release version as a surrogate build
 number for builds that do not publish packages to nuget.org, so
 these builds can be downloaded and tested before the final build
-is made and published to nuget.org. This approach is not
+is made and published to [nuget.org][]. This approach is not
 recommended for robust production environments because even
 though the final published package is built from the exact same
 source, the build process may still potentially introduce some
@@ -111,3 +111,5 @@ https://github.com/maxmind/libmaxminddb/blob/main/bin/mmdblookup.c
 This application does not do anything useful and merely calls
 MaxMindDB functions to verify that the package is installed
 properly for all platforms and configurations.
+
+[nuget.org]: https://www.nuget.org/packages/StoneSteps.MaxMindDB.Static/
