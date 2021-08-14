@@ -4,7 +4,7 @@ This project builds a MaxMindDB Nuget package with static MaxMindDB
 libraries and header files  for `Win32`/`x64` platforms and
 `Debug`/`Release` configurations.
 
-Visit MaxMindDB project for additional MaxMindDB library documentation:
+Visit MaxMindDB project for MaxMindDB library documentation:
 
 https://github.com/maxmind/libmaxminddb/
 
@@ -42,7 +42,7 @@ Nuget package revision is injected outside of the Nuget package
 configuration, during the package build process, and is not present
 in the package specification file.
 
-Specifically, `nuget.exe` is invoked with `-Version=1.2.11.123` to
+Specifically, `nuget.exe` is invoked with `-Version=1.6.0.123` to
 build a package with the revision `123`.
 
 ### Version Locations
@@ -52,13 +52,16 @@ needs to be changed in all of them for a new version of MaxMindDB.
 
   * nuget/StoneSteps.MaxMindDB.Static.nuspec (`version`)
   * devops/make-package.bat (`PKG_VER`, `PKG_REV`, `SRC_TAG`)
-  * .github/workflows/build-nuget-package.yml (`name`, `PKG_VER`,
+  * .github/workflows/nuget-mmdb-1.6.0.yml (`name`, `PKG_VER`,
     `PKG_REV`, `SRC_TAG`)
 
 In the GitHub workflow YAML, `PKG_REV` must be reset to `1` (one)
-every time MaxMindDB version is changed. For local builds package
-revision is supplied on the command line and should be specified
-as `1` (one) for a new version of MaxMindDB.
+every time MaxMindDB version is changed. The workflow file must
+be copied with the new version in the name.This is necessary because
+GitHub maintains build numbers per workflow file name.
+
+For local builds package revision is supplied on the command line
+and should be specified as `1` (one) for a new version of MaxMindDB.
 
 ### GitHub Build Number
 
@@ -66,7 +69,7 @@ Build number within the GitHub workflow YAML is maintained in an
 unconventional way because of the lack of build maturity management
 between GitHub and Nuget.
 
-For example, using build management systems, such as Artifactory,
+For example, using a build management system, such as Artifactory,
 every build would generate a Nuget package with the same version
 and package revision for the upcoming release and build numbers
 would be tracked within the build management system. A build that
