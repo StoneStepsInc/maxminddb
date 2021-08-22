@@ -57,8 +57,8 @@ needs to be changed in all of them for a new version of MaxMindDB.
 
 In the GitHub workflow YAML, `PKG_REV` must be reset to `1` (one)
 every time MaxMindDB version is changed. The workflow file must
-be copied with the new version in the name.This is necessary because
-GitHub maintains build numbers per workflow file name.
+be renamed with the new version in the name. This is necessary
+because GitHub maintains build numbers per workflow file name.
 
 For local builds package revision is supplied on the command line
 and should be specified as `1` (one) for a new version of MaxMindDB.
