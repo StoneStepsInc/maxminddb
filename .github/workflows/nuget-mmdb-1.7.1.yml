@@ -122,18 +122,18 @@ jobs:
         copy /Y ${{ env.MAXMIND_FNAME }}\include\*.h nuget\build\native\include\
 
         mkdir nuget\build\native\lib\x64\Debug
-        copy /Y ${{ env.MAXMIND_FNAME }}\build-x64\Debug\maxminddb.lib nuget\build\native\lib\x64\Debug\
-        copy /Y ${{ env.MAXMIND_FNAME }}\build-x64\Debug\maxminddb.pdb nuget\build\native\lib\x64\Debug\
+        copy /Y ${{ env.MAXMIND_FNAME }}\build\x64\Debug\maxminddb.lib nuget\build\native\lib\x64\Debug\
+        copy /Y ${{ env.MAXMIND_FNAME }}\build\x64\Debug\maxminddb.pdb nuget\build\native\lib\x64\Debug\
 
         mkdir nuget\build\native\lib\x64\Release
-        copy /Y ${{ env.MAXMIND_FNAME }}\build-x64\Release\maxminddb.lib nuget\build\native\lib\x64\Release\
+        copy /Y ${{ env.MAXMIND_FNAME }}\build\x64\Release\maxminddb.lib nuget\build\native\lib\x64\Release\
 
         mkdir nuget\build\native\lib\Win32\Debug
-        copy /Y ${{ env.MAXMIND_FNAME }}\build-x86\Debug\maxminddb.lib nuget\build\native\lib\Win32\Debug\
-        copy /Y ${{ env.MAXMIND_FNAME }}\build-x86\Debug\maxminddb.pdb nuget\build\native\lib\Win32\Debug\
+        copy /Y ${{ env.MAXMIND_FNAME }}\build\Win32\Debug\maxminddb.lib nuget\build\native\lib\Win32\Debug\
+        copy /Y ${{ env.MAXMIND_FNAME }}\build\Win32\Debug\maxminddb.pdb nuget\build\native\lib\Win32\Debug\
 
         mkdir nuget\build\native\lib\Win32\Release
-        copy /Y ${{ env.MAXMIND_FNAME }}\build-x86\Release\maxminddb.lib nuget\build\native\lib\Win32\Release\
+        copy /Y ${{ env.MAXMIND_FNAME }}\build\Win32\Release\maxminddb.lib nuget\build\native\lib\Win32\Release\
 
       # this is an unconventional use of the pre-release version - see README.md
     - name: Make CI Nuget package
