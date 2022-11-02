@@ -1,6 +1,6 @@
 This package contains static MaxMindDB libraries and header files
-for Win32/x64 platforms and Debug/Release configurations. There
-are no dynamic libraries included.
+for Win32/x64 platforms and Debug/Release configurationsbuilt with
+Visual C++ 2022, against Debug/Release MT/DLL MSVC CRT.
 
 The MaxMindDB static library appropriate for the platform and
 configuration selected in a Visual Studio solution is explicitly

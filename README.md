@@ -26,7 +26,8 @@ for build configurations named `Debug` and `Release` and will not
 work for any other configuration names. Do not install this package
 for projects with configurations other than `Debug` and `Release`.
 
-See `StoneSteps.MaxMindDB.Static.props` and `StoneSteps.MaxMindDB.Static.targets`
+See `StoneSteps.MaxMindDB.VS2022.Static.props` and
+`StoneSteps.MaxMindDB.VS2022.Static.targets`
 for specific package configuration details and file locations.
 
 ## Package Version
@@ -51,9 +52,9 @@ MaxMindDB version is located in a few places in this repository and
 needs to be changed in all of them for a new version of MaxMindDB.
 
   * nuget/StoneSteps.MaxMindDB.Static.nuspec (`version`)
-  * devops/make-package.bat (`PKG_VER`, `PKG_REV`, `SRC_TAG`)
+  * devops/make-package.bat (`PKG_VER`, `PKG_REV`)
   * .github/workflows/nuget-mmdb-1.6.0.yml (`name`, `PKG_VER`,
-    `PKG_REV`, `SRC_TAG`)
+    `PKG_REV`, `MAXMIND_FNAME`)
 
 In the GitHub workflow YAML, `PKG_REV` must be reset to `1` (one)
 every time MaxMindDB version is changed. The workflow file must
@@ -89,7 +90,7 @@ unknowns into the final package (e.g. build VM was updated).
 ## Building Package Locally
 
 You can build a Nuget package locally with `make-package.bat`
-located in `devops`. This script expects VS2019 Community Edition
+located in `devops`. This script expects VS2022 Community Edition
 installed in the default location. If you have other edition of
 Visual Studio, edit the file to use the correct path to the
 `vcvarsall.bat` file.
@@ -97,7 +98,7 @@ Visual Studio, edit the file to use the correct path to the
 Run `make-package.bat` from the repository root directory with
 a package revision as the first argument. There is no provision
 to manage build numbers from the command line and other tools
-should be used for this (e.g. Artifactory).
+should be used for this.
 
 ## Sample Application
 
