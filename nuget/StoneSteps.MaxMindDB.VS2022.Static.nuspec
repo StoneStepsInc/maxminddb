@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <id>StoneSteps.MaxMindDB.Static</id>
+    <id>StoneSteps.MaxMindDB.VS2022.Static</id>
     <version>1.6.0</version>
     <authors>MaxMind (contents)</authors>
     <owners>Stone Steps (package)</owners>
@@ -12,12 +12,12 @@
     <releaseNotes>
 Package Notes:
 
-  * Static libraries built for x64/Win32 platforms and
-    Debug/Release configurations.
+  * Static libraries for Debug/Release configurations, Win32/x64 platforms
+  * Built in Visual C++ 2022, against Debug/Release MT/DLL MSVC CRT
 
 MaxMindDB changes:
 
-https://github.com/maxmind/libmaxminddb/blob/1.6.0/Changes.md
+https://github.com/maxmind/libmaxminddb/blob/1.7.1/Changes.md
     </releaseNotes>
     <copyright>MaxMind</copyright>
     <tags>MaxMind DB, GeoIP, native, library</tags>

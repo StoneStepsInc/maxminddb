@@ -134,14 +134,14 @@ jobs:
     - name: Make CI Nuget package
       if: ${{ github.event.inputs.publish-package != 'yes' }}
       run: |
-        nuget pack nuget\StoneSteps.MaxMindDB.Static.nuspec -Suffix "ci.${{ env.BUILD_NUMBER }}" -Version ${{ env.PKG_VER }}.${{ env.PKG_REV }}
+        nuget pack nuget\StoneSteps.MaxMindDB.VS2022.Static.nuspec -Suffix "ci.${{ env.BUILD_NUMBER }}" -Version ${{ env.PKG_VER }}.${{ env.PKG_REV }}
 
     - name: Upload CI Nuget package
       if: ${{ github.event.inputs.publish-package != 'yes' }}
       uses: actions/upload-artifact@v3
       with:
         name: MaxMindDB CI Nuget package
-        path: StoneSteps.MaxMindDB.Static.${{ env.PKG_VER }}.${{ env.PKG_REV }}-ci.${{ env.BUILD_NUMBER }}.nupkg
+        path: StoneSteps.MaxMindDB.VS2022.Static.${{ env.PKG_VER }}.${{ env.PKG_REV }}-ci.${{ env.BUILD_NUMBER }}.nupkg
 
       #
       # Use `-Version` explicitly to override the version in the manifest,
@@ -150,9 +150,9 @@ jobs:
     - name: Make Nuget package
       if: ${{ github.event.inputs.publish-package == 'yes' }}
       run: |
-        nuget pack nuget\StoneSteps.MaxMindDB.Static.nuspec -Version ${{ env.PKG_VER }}.${{ env.PKG_REV }}
+        nuget pack nuget\StoneSteps.MaxMindDB.VS2022.Static.nuspec -Version ${{ env.PKG_VER }}.${{ env.PKG_REV }}
 
     - name: Publish Nuget package
       if: ${{ github.event.inputs.publish-package == 'yes' }}
       run: |
-        nuget push StoneSteps.MaxMindDB.Static.${{ env.PKG_VER }}.${{ env.PKG_REV }}.nupkg -Source ${{ env.NUGET_PUB_URL }} -ApiKey "${{ secrets.NUGET_API_KEY }}" -NonInteractive
+        nuget push StoneSteps.MaxMindDB.VS2022.Static.${{ env.PKG_VER }}.${{ env.PKG_REV }}.nupkg -Source ${{ env.NUGET_PUB_URL }} -ApiKey "${{ secrets.NUGET_API_KEY }}" -NonInteractive

@@ -86,4 +86,4 @@ copy /Y %MAXMIND_FNAME%\build\Win32\Release\maxminddb.lib nuget\build\native\lib
 rem
 rem Create a package
 rem
-nuget pack nuget\StoneSteps.MaxMindDB.Static.nuspec -Version %PKG_VER%.%PKG_REV%
+nuget pack nuget\StoneSteps.MaxMindDB.VS2022.Static.nuspec -Version %PKG_VER%.%PKG_REV%
