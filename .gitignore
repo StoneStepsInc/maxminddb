@@ -18,5 +18,6 @@
 # sample app for testing the Nuget package
 /sample-mmdblookup/.vs/
 /sample-mmdblookup/packages/
+/sample-mmdblookup/packages.config
 /sample-mmdblookup/Win32/
 /sample-mmdblookup/x64/
