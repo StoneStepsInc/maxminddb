@@ -56,7 +56,7 @@ env:
   # or to define them in each step where the source directory is
   # referenced.
   #
-  MAXMIND_FNAME: libmaxminddb-%PKG_VER%
+  MAXMIND_FNAME: libmaxminddb-1.7.1
   MAXMIND_SHA256: e8414f0dedcecbc1f6c31cb65cd81650952ab0677a4d8c49cab603b3b8fb083e
 
   # for VS Community Edition, replace `Enterprise` with `Community` in the path
