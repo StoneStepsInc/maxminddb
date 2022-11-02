@@ -8,7 +8,7 @@
 # to restart build numbers from `1`. This is necessary because GitHub
 # maintains build numbers per workflow file name.
 #
-name: MaxMindDB v1.6.0-1
+name: MaxMindDB v1.7.1-1
 
 #
 # When `publish-package` is set to `yes`, the workflow will build
@@ -30,7 +30,7 @@ on:
   workflow_dispatch:
     inputs:
       publish-package:
-        description: Publish Nuget Package?
+        description: Publish Nuget Package (yes/no)?
         required: false
 
 #
@@ -45,11 +45,19 @@ on:
 # adding or removing files, changing any text in README files, etc.
 #
 env:
-  PKG_VER: 1.6.0
+  PKG_VER: 1.7.1
   PKG_REV: 1
   BUILD_NUMBER: ${{ github.run_number }}
 
-  SRC_TAG: 1.6.0
+  #
+  # GitHub won't allow referencing `env` within this section, which
+  # means that in order to reference the source directory we need
+  # to concatenate variables in-place (e.g. `libmaxminddb-${{ env.PKG_VER }}`)
+  # or to define them in each step where the source directory is
+  # referenced.
+  #
+  MAXMIND_FNAME: libmaxminddb-%PKG_VER%
+  MAXMIND_SHA256: e8414f0dedcecbc1f6c31cb65cd81650952ab0677a4d8c49cab603b3b8fb083e
 
   # for VS Community Edition, replace `Enterprise` with `Community` in the path
   VCVARSALL: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall'
@@ -64,43 +72,37 @@ defaults:
 jobs:
   build-libmmdb:
     name: Build libmaxminddb
-    runs-on: windows-latest
+    runs-on: windows-2022
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
-      #
-      # This project is set up with two sub-modules, one for tests
-      # and one for test MMDB databases. This script explicitly
-      # excludes tests from the CMake build, so we can get just the
-      # main project.
-      #
-    - name: Clone libmaxminddb
+    - name: Download libmaxminddb
       run: |
-        git clone --branch ${{ env.SRC_TAG }} https://github.com/maxmind/libmaxminddb.git libmaxminddb
-
-    - name: Create build directories
-      working-directory: libmaxminddb
-      run: |
-        mkdir build-x64
-        mkdir build-x86
+        curl --location --output ${{ env.MAXMIND_FNAME }}.tar.gz https://github.com/maxmind/libmaxminddb/releases/download/${{ env.PKG_VER }}/${{ env.MAXMIND_FNAME }}.tar.gz
+        
+    - name: Verify libmaxminddb checksum
+      run: 7z h -scrcSHA256 ${{ env.MAXMIND_FNAME }}.tar.gz | findstr /C:"SHA256 for data" | call devops\check-sha256 "${{ env.MAXMIND_SHA256 }}"
 
     - name: Build x64
-      working-directory: libmaxminddb\build-x64
+      working-directory: ${{ env.MAXMIND_FNAME }}
       run: |
         call ${{ env.VCVARSALL }} x64
-        cmake -DBUILD_TESTING=OFF -A x64 ..
-        cmake --build . --config Debug
-        cmake --build . --config Release
+        mkdir build\x64
+        cmake -S . -B build\x64 -DBUILD_TESTING=OFF -A x64
+        cmake --build build\x64 --config Debug
+        cmake --build build\x64 --config Release
 
+      # VCVARSALL is invoked only for tools and CMake sets the platform
     - name: Build Win32
-      working-directory: libmaxminddb\build-x86
+      working-directory: ${{ env.MAXMIND_FNAME }}
       run: |
-        call ${{ env.VCVARSALL }} x86
-        cmake -DBUILD_TESTING=OFF -A Win32 ..
-        cmake --build . --config Debug
-        cmake --build . --config Release
+        call ${{ env.VCVARSALL }} x64
+        mkdir build\Win32
+        cmake -S . -B build\Win32 -DBUILD_TESTING=OFF -A Win32
+        cmake --build build\Win32 --config Debug
+        cmake --build build\Win32 --config Release
 
       #
       # Unfortunately, release builds are set up not to generate PDB,
@@ -109,38 +111,34 @@ jobs:
     - name: Collect build artifacts
       run: |
         mkdir nuget\licenses\
-        copy /Y libmaxminddb\LICENSE. nuget\licenses\
+        copy /Y ${{ env.MAXMIND_FNAME }}\LICENSE. nuget\licenses\
 
         mkdir nuget\build\native\include\
-        copy /Y libmaxminddb\include\*.h nuget\build\native\include\
+        copy /Y ${{ env.MAXMIND_FNAME }}\include\*.h nuget\build\native\include\
 
         mkdir nuget\build\native\lib\x64\Debug
-        copy /Y libmaxminddb\build-x64\Debug\maxminddb.lib nuget\build\native\lib\x64\Debug\
-        copy /Y libmaxminddb\build-x64\Debug\maxminddb.pdb nuget\build\native\lib\x64\Debug\
+        copy /Y ${{ env.MAXMIND_FNAME }}\build-x64\Debug\maxminddb.lib nuget\build\native\lib\x64\Debug\
+        copy /Y ${{ env.MAXMIND_FNAME }}\build-x64\Debug\maxminddb.pdb nuget\build\native\lib\x64\Debug\
 
         mkdir nuget\build\native\lib\x64\Release
-        copy /Y libmaxminddb\build-x64\Release\maxminddb.lib nuget\build\native\lib\x64\Release\
+        copy /Y ${{ env.MAXMIND_FNAME }}\build-x64\Release\maxminddb.lib nuget\build\native\lib\x64\Release\
 
         mkdir nuget\build\native\lib\Win32\Debug
-        copy /Y libmaxminddb\build-x86\Debug\maxminddb.lib nuget\build\native\lib\Win32\Debug\
-        copy /Y libmaxminddb\build-x86\Debug\maxminddb.pdb nuget\build\native\lib\Win32\Debug\
+        copy /Y ${{ env.MAXMIND_FNAME }}\build-x86\Debug\maxminddb.lib nuget\build\native\lib\Win32\Debug\
+        copy /Y ${{ env.MAXMIND_FNAME }}\build-x86\Debug\maxminddb.pdb nuget\build\native\lib\Win32\Debug\
 
         mkdir nuget\build\native\lib\Win32\Release
-        copy /Y libmaxminddb\build-x86\Release\maxminddb.lib nuget\build\native\lib\Win32\Release\
-
-    - name: Clean up
-      run: |
-        rmdir /S /Q libmaxminddb
+        copy /Y ${{ env.MAXMIND_FNAME }}\build-x86\Release\maxminddb.lib nuget\build\native\lib\Win32\Release\
 
       # this is an unconventional use of the pre-release version - see README.md
     - name: Make CI Nuget package
       if: ${{ github.event.inputs.publish-package != 'yes' }}
       run: |
-        nuget pack nuget\StoneSteps.MaxMindDB.Static.nuspec -Suffix "ci.%BUILD_NUMBER%" -Version ${{ env.PKG_VER }}.${{ env.PKG_REV }}
+        nuget pack nuget\StoneSteps.MaxMindDB.Static.nuspec -Suffix "ci.${{ env.BUILD_NUMBER }}" -Version ${{ env.PKG_VER }}.${{ env.PKG_REV }}
 
     - name: Upload CI Nuget package
       if: ${{ github.event.inputs.publish-package != 'yes' }}
-      uses: actions/upload-artifact@v2.2.1
+      uses: actions/upload-artifact@v3
       with:
         name: MaxMindDB CI Nuget package
         path: StoneSteps.MaxMindDB.Static.${{ env.PKG_VER }}.${{ env.PKG_REV }}-ci.${{ env.BUILD_NUMBER }}.nupkg

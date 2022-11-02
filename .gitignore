@@ -2,7 +2,10 @@
 /.vs/
 
 # extracted MMDB source
-/libmaxminddb/
+/libmaxminddb-*/
+
+# downloaded MMDB package file
+/libmaxminddb-*.tar.gz
 
 # collected zLib build artifacts
 /nuget/build/native/include/

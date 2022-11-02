@@ -7,15 +7,17 @@ if "%~1" == "" (
   goto :EOF
 )
 
-set PKG_VER=1.6.0
+set PKG_VER=1.7.1
 set PKG_REV=%~1
 
-set SRC_TAG=1.6.0
+set MAXMIND_FNAME=libmaxminddb-%PKG_VER%
+set MAXMIND_SHA256=e8414f0dedcecbc1f6c31cb65cd81650952ab0677a4d8c49cab603b3b8fb083e
 
 rem
 rem Replace `Community` with `Enterprise` for Enterprise Edition
 rem
-set VCVARSALL=C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall
+set VCVARSALL=C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall
+set SEVENZIP_EXE=c:\Program Files\7-Zip\7z.exe
 
 rem
 rem We don't need to set the environment for compiling, but rather
@@ -25,65 +27,61 @@ rem type.
 rem
 call "%VCVARSALL%" x64
 
-rem
-rem This project is set up with two sub-modules, one for tests
-rem and one for test MMDB databases. This script explicitly
-rem excludes tests from the CMake build, so we can get just the
-rem main project.
-rem
-git clone --branch %SRC_TAG% https://github.com/maxmind/libmaxminddb.git libmaxminddb
+curl --location --output %MAXMIND_FNAME%.tar.gz https://github.com/maxmind/libmaxminddb/releases/download/%PKG_VER%/%MAXMIND_FNAME%.tar.gz
 
-cd libmaxminddb
+"%SEVENZIP_EXE%" h -scrcSHA256 %MAXMIND_FNAME%.tar.gz | findstr /C:"SHA256 for data" | call devops\check-sha256 "%MAXMIND_SHA256%"
+
+tar xzf %MAXMIND_FNAME%.tar.gz
+
+cd %MAXMIND_FNAME%
 
 rem
 rem Build debug and release configurations for x64
 rem
-mkdir build-x64 && cd build-x64
+mkdir build\x64
 
 rem generate project files for the x64 platform
-cmake -DBUILD_TESTING=OFF -A x64 ..
+cmake -S . -B build\x64 -DBUILD_TESTING=OFF -A x64
 
 rem build both configurations
-cmake --build . --config Debug
-cmake --build . --config Release
-
-cd ..
+cmake --build build\x64 --config Debug
+cmake --build build\x64 --config Release
 
 rem
 rem Build debug and release configurations for Win32
 rem
-mkdir build-x86 && cd build-x86
+mkdir build\Win32
 
-cmake -DBUILD_TESTING=OFF -A Win32 ..
+cmake -S . -B build\Win32 -DBUILD_TESTING=OFF -A Win32
 
-cmake --build . --config Debug
-cmake --build . --config Release
+cmake --build build\Win32 --config Debug
+cmake --build build\Win32 --config Release
 
-cd ..\..\
+cd ..
 
 rem
 rem Collect all package files in the staging area
 rem
 mkdir nuget\licenses\
-copy /Y libmaxminddb\LICENSE. nuget\licenses\
+copy /Y %MAXMIND_FNAME%\LICENSE. nuget\licenses\
 
 mkdir nuget\build\native\include\
-copy /Y libmaxminddb\include\*.h nuget\build\native\include\
+copy /Y %MAXMIND_FNAME%\include\*.h nuget\build\native\include\
 
 mkdir nuget\build\native\lib\x64\Debug
-copy /Y libmaxminddb\build-x64\Debug\maxminddb.lib nuget\build\native\lib\x64\Debug\
-copy /Y libmaxminddb\build-x64\Debug\maxminddb.pdb nuget\build\native\lib\x64\Debug\
+copy /Y %MAXMIND_FNAME%\build\x64\Debug\maxminddb.lib nuget\build\native\lib\x64\Debug\
+copy /Y %MAXMIND_FNAME%\build\x64\Debug\maxminddb.pdb nuget\build\native\lib\x64\Debug\
 
 rem unfortunately, no PDB for the release build, which \help in debugging
 mkdir nuget\build\native\lib\x64\Release
-copy /Y libmaxminddb\build-x64\Release\maxminddb.lib nuget\build\native\lib\x64\Release\
+copy /Y %MAXMIND_FNAME%\build\x64\Release\maxminddb.lib nuget\build\native\lib\x64\Release\
 
 mkdir nuget\build\native\lib\Win32\Debug
-copy /Y libmaxminddb\build-x86\Debug\maxminddb.lib nuget\build\native\lib\Win32\Debug\
-copy /Y libmaxminddb\build-x86\Debug\maxminddb.pdb nuget\build\native\lib\Win32\Debug\
+copy /Y %MAXMIND_FNAME%\build\Win32\Debug\maxminddb.lib nuget\build\native\lib\Win32\Debug\
+copy /Y %MAXMIND_FNAME%\build\Win32\Debug\maxminddb.pdb nuget\build\native\lib\Win32\Debug\
 
 mkdir nuget\build\native\lib\Win32\Release
-copy /Y libmaxminddb\build-x86\Release\maxminddb.lib nuget\build\native\lib\Win32\Release\
+copy /Y %MAXMIND_FNAME%\build\Win32\Release\maxminddb.lib nuget\build\native\lib\Win32\Release\
 
 rem
 rem Create a package
